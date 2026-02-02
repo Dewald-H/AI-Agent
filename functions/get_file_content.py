@@ -1,0 +1,23 @@
+import os
+from config import MAX_CHARS
+
+def get_file_content(working_directory, file_path):
+    try:
+        working_dir_abs = os.path.abspath(working_directory)
+        target_file = os.path.normpath(os.path.join(working_dir_abs, file_path))
+
+        if os.path.commonpath([working_dir_abs, target_file]) != working_dir_abs:
+            return f'Error: Cannot read "{file_path}" as it is outside the permitted working directory'
+
+        if not os.path.isfile(target_file) or not os.path.exists(target_file):
+            return f'Error: "{file_path}" does not exist or is not a regular file'
+
+        with open(target_file, "r", encoding="utf-8") as f:
+            contents = f.read(MAX_CHARS)
+            if f.read(1):
+                contents += f'[...File "{file_path}" truncated at {MAX_CHARS} characters]'
+
+        return contents
+
+    except Exception as e:
+        return f"Error: {e}"
