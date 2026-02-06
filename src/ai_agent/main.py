@@ -4,8 +4,8 @@ import argparse
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
-from prompts import system_prompt
-from call_functions import available_functions, call_function
+from .prompts import system_prompt
+from .call_functions import available_functions, call_function
 
 
 def main():

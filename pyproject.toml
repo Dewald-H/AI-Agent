@@ -8,3 +8,12 @@ dependencies = [
     "google-genai==1.12.1",
     "python-dotenv==1.1.0",
 ]
+
+[project.scripts]
+ai-agent = "ai_agent.main:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
