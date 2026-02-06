@@ -1,10 +1,11 @@
 import os
+import sys
+import argparse
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 from prompts import system_prompt
 from call_functions import available_functions, call_function
-import argparse
 
 
 def main():
@@ -24,44 +25,59 @@ def main():
 
     messages = [types.Content(role="user", parts=[types.Part(text=args.user_prompt)])]
 
-    response = client.models.generate_content(
-        model='gemini-2.5-flash',
-        contents=messages,
-        config=types.GenerateContentConfig(
-            tools=[available_functions],
-            system_instruction=system_prompt,
-            temperature=0,
-            )
-    )
-    
-    if not response.usage_metadata:
-        raise RuntimeError("Gemini API response appears to be malformed")
-    
-    if args.verbose:
-        print(f"User prompt: {args.user_prompt}")
-        print(f"Prompt tokens: {response.usage_metadata.prompt_token_count}")
-        print(f"Response tokens: {response.usage_metadata.candidates_token_count}")
+    for _ in range(20):
 
-    if response.function_calls:
-        function_results = []
-        for function_call in response.function_calls:
-            call_function_result = call_function(function_call, verbose=args.verbose)
+        response = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=messages,
+            config=types.GenerateContentConfig(
+                tools=[available_functions],
+                system_instruction=system_prompt,
+                temperature=0,
+                ),
+        )
 
-            if not call_function_result.parts:
-                raise Exception("Tool content has no parts")
-            
-            if call_function_result.parts[0].function_response is None:
-                raise Exception("First part missing function_response")
-            
-            if call_function_result.parts[0].function_response.response is None:
-                raise Exception("FunctionResponse.response is None")
-            
-            function_results.append(call_function_result.parts[0])
+        if response.candidates:
+            for candidate in response.candidates:
+                if candidate.content:
+                    messages.append(candidate.content)
+        
+        if not response.usage_metadata:
+            raise RuntimeError("Gemini API response appears to be malformed")
+        
+        if args.verbose:
+            print(f"User prompt: {args.user_prompt}")
+            print(f"Prompt tokens: {response.usage_metadata.prompt_token_count}")
+            print(f"Response tokens: {response.usage_metadata.candidates_token_count}")
 
-            if args.verbose:
-                print(f"-> {call_function_result.parts[0].function_response.response}")
+        if response.function_calls:
+            function_results = []
+            for function_call in response.function_calls:
+                call_function_result = call_function(function_call, verbose=args.verbose)
+
+                if not call_function_result.parts:
+                    raise Exception("Tool content has no parts")
+                
+                if call_function_result.parts[0].function_response is None:
+                    raise Exception("First part missing function_response")
+                
+                if call_function_result.parts[0].function_response.response is None:
+                    raise Exception("FunctionResponse.response is None")
+                
+                function_results.append(call_function_result.parts[0])
+
+                if args.verbose:
+                    print(f"-> {call_function_result.parts[0].function_response.response}")
+
+            messages.append(types.Content(role="user", parts=function_results))
+
+        else:
+            print(response.text)
+            break
+
     else:
-        print(response.text)
+        print("Reached max iterations (20) without a final response")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
