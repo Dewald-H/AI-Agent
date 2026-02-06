@@ -48,9 +48,9 @@ You can install the agent as a Python package, either globally or in a virtual e
 
 ### 1) Get a Gemini API key
 
-Open Google’s “Using Gemini API keys” guide and follow the steps to create an API key.
+Open Google’s “Using Gemini API keys” guide and follow the steps to create an [API Key](https://ai.google.dev/gemini-api/docs/api-key).
 
-(Shortcut) You can also go straight to the Google AI Studio API key page
+(Shortcut) You can also go straight to the [Google AI Studio](https://aistudio.google.com/app/api-keys) API key page
 
 ### 2) Install ai-agent from GitHub (recommended for users)
 
@@ -65,7 +65,7 @@ python -m venv .venv
 source .venv/bin/activate
 
 # Install ai-agent from GitHub
-pip install "git+https://github.com/<YOUR_GITHUB_USERNAME>/<YOUR_REPO>.git"
+pip install "git+https://github.com/Dewald-H/AI-Agent.git"
 ```
 After this, the ai-agent command should be available in that environment:
 ```bash
